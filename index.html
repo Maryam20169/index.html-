@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>مغامرة مريم في عالم التكاثر</title>
+<style>
+:root{--purple:#70458c;--pink:#f4dff2;--ink:#493454;--line:#ead8ef;--mint:#e4f4e9}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(135deg,#fff7fc,#f2ecff);font-family:Tahoma,Arial,sans-serif;color:var(--ink);padding:18px}
+main{max-width:760px;margin:auto}
+.hero,.card,.result{background:#fff;border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:0 8px 24px #6c4a7810;margin-bottom:15px}
+.hero{text-align:center;background:linear-gradient(135deg,#f7e8f8,#e9e1ff)}
+h1{margin:5px 0;color:var(--purple);font-size:clamp(25px,6vw,38px)}
+.sub{font-size:18px;font-weight:bold}
+.name{line-height:2;font-weight:bold}
+.pill{display:inline-block;background:#fff;border-radius:30px;padding:7px 15px;color:var(--purple);font-weight:bold;margin-top:8px}
+.intro{font-size:17px;line-height:1.9}
+button{border:0;border-radius:14px;padding:13px 18px;font-size:17px;font-weight:bold;cursor:pointer;background:var(--purple);color:white;width:100%;margin-top:10px}
+button:disabled{opacity:.45;cursor:not-allowed}
+.progress{height:9px;background:#eee5f2;border-radius:20px;overflow:hidden;margin:12px 0}
+.bar{height:100%;width:0;background:#a77bc1;transition:width .2s}
+.qnum{color:#9565ad;font-weight:bold;margin-bottom:8px}
+.question{font-size:19px;font-weight:bold;line-height:1.7}
+.option{display:block;width:100%;text-align:right;background:#fbf7fc;color:var(--ink);border:1px solid var(--line);margin:9px 0;padding:13px;border-radius:13px;font-size:16px;font-weight:normal}
+.option.selected{background:#eee3f7;border:2px solid #9b70b3}
+.option.correct{background:#e7f6eb;border-color:#74b789}
+.option.wrong{background:#fff0ec;border-color:#e7a18f}
+.feedback{border-radius:13px;padding:12px;line-height:1.7;margin-top:10px}
+.good{background:var(--mint)}.bad{background:#fff0ec}
+.result{text-align:center;background:#f5eafa}
+.score{font-size:42px;font-weight:bold;color:var(--purple)}
+.small{font-size:13px;color:#806d87}
+footer{text-align:center;color:#956e9f;padding:12px}
+</style>
+</head>
+<body>
+<main>
+<section class="hero">
+<div style="font-size:42px">🌸🧬🌱</div>
+<h1>مغامرة مريم</h1>
+<div class="sub">في عالم التكاثر</div>
+<p class="name">الطالبة: مريم علي حسين<br>الصف: خامس فرقة ١</p>
+<span class="pill">🎮 لعبة العلوم التفاعلية</span>
+</section>
+<section class="card" id="start">
+<p class="intro">أهلًا يا مريم! ✨<br>استعدّي لمغامرة ممتعة من ٨ أسئلة عن التكاثر الجنسي واللاجنسي وطرقه. اختاري الإجابة الصحيحة، واكتشفي نتيجتك في النهاية.</p>
+<button onclick="begin()">يلا نبدأ المغامرة 🚀</button>
+</section>
+<section id="game" class="card" hidden>
+<div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>أسئلة التحدي</b><span id="count" class="small">السؤال ١ من ٨</span></div>
+<div class="progress"><div class="bar" id="bar"></div></div>
+<div class="qnum" id="qnum"></div>
+<div class="question" id="question"></div>
+<div id="options"></div>
+<div id="feedback"></div>
+<button id="next" onclick="nextQ()" disabled>السؤال التالي ←</button>
+</section>
+<section id="result" class="result" hidden></section>
+<footer>تعلّمي • فكّري • أبدعي 💜</footer>
+</main>
+<script>
+const qs=[
+{q:"ما المقصود بالتكاثر الجنسي؟",a:["إنتاج مخلوقات حية جديدة من أب واحد","إنتاج مخلوقات حية جديدة من أبوين","انقسام خلية واحدة إلى خليتين"],c:1,e:"التكاثر الجنسي ينتج مخلوقات حية جديدة من أبوين."},
+{q:"كم عدد الآباء في التكاثر اللاجنسي؟",a:["أب واحد","أبوان","ثلاثة آباء"],c:0,e:"يحدث التكاثر اللاجنسي من أحد الأبوين."},
+{q:"ما دور الخلايا الجنسية في التكاثر الجنسي؟",a:["لا دور لها","لها دور أساسي","تمنع حدوث التكاثر"],c:1,e:"للخلايا الجنسية دور أساسي في التكاثر الجنسي."},
+{q:"أي نوع من التكاثر ينتج عنه تنوع أكبر في الصفات الوراثية؟",a:["التكاثر اللاجنسي","التكاثر الجنسي","كلاهما بنفس الدرجة"],c:1,e:"يساعد التكاثر الجنسي على تنوع الصفات الوراثية."},
+{q:"ما الطريقة التي ينمو فيها جزء من جسم المخلوق الحي ثم ينفصل؟",a:["الانقسام","التبرعم","التكاثر الخضري"],c:1,e:"في التبرعم ينمو بروز من جسم الأب، ثم قد ينفصل ليكوّن مخلوقًا جديدًا."},
+{q:"أي مما يلي مثال على التكاثر بالانقسام؟",a:["البكتيريا","الفراولة","الهيدرا"],c:0,e:"تتكاثر البكتيريا بالانقسام."},
+{q:"يحدث التكاثر الخضري في النباتات عن طريق:",a:["الأوراق أو الجذور أو السيقان","الخلايا الجنسية فقط","الحيوانات"],c:0,e:"تنمو نباتات جديدة انطلاقًا من الأوراق أو الجذور أو السيقان."},
+{q:"أي مما يلي مثال على التكاثر بالتبرعم؟",a:["الإنسان","الهيدرا","الفراولة"],c:1,e:"الهيدرا من أمثلة المخلوقات التي تتكاثر بالتبرعم."}
+];
+let i=0,score=0,chosen=null,locked=false;
+function begin(){document.getElementById('start').hidden=true;document.getElementById('game').hidden=false;showQ()}
+function showQ(){
+chosen=null;locked=false;
+document.getElementById('next').disabled=true;
+document.getElementById('feedback').innerHTML='';
+document.getElementById('qnum').textContent='السؤال '+(i+1);
+document.getElementById('count').textContent='السؤال '+(i+1)+' من '+qs.length;
+document.getElementById('bar').style.width=(i/qs.length*100)+'%';
+document.getElementById('question').textContent=qs[i].q;
+const box=document.getElementById('options');box.innerHTML='';
+qs[i].a.forEach((a,j)=>{const b=document.createElement('button');b.className='option';b.textContent=a;b.onclick=()=>choose(j,b);box.appendChild(b)});
+}
+function choose(j,btn){
+if(locked)return;locked=true;chosen=j;
+const q=qs[i];const opts=[...document.querySelectorAll('.option')];
+opts.forEach((b,k)=>{b.disabled=true;if(k===q.c)b.classList.add('correct');if(k===j&&j!==q.c)b.classList.add('wrong')});
+if(j===q.c){score++;document.getElementById('feedback').innerHTML='<div class="feedback good"><b>✓ إجابة صحيحة! أحسنتِ يا مريم</b><br>'+q.e+'</div>'}
+else{document.getElementById('feedback').innerHTML='<div class="feedback bad"><b>✗ ليست الإجابة الصحيحة.</b><br>الإجابة الصحيحة: '+q.a[q.c]+'<br>'+q.e+'</div>'}
+document.getElementById('next').disabled=false;
+document.getElementById('next').textContent=i===qs.length-1?'عرض النتيجة 🏆':'السؤال التالي ←';
+}
+function nextQ(){if(!locked)return;i++;if(i<qs.length)showQ();else finish()}
+function finish(){
+document.getElementById('game').hidden=true;
+const r=document.getElementById('result');r.hidden=false;
+let msg=score===8?'ممتازة! بطلة العلوم 🌟':score>=6?'أحسنتِ يا مريم! 🌷':score>=4?'عمل جميل! واصلي التعلم 💜':'لا بأس، راجعي المعلومات وحاولي مرة أخرى 🌸';
+r.innerHTML='<div style="font-size:42px">🏆🌸</div><h2>نتيجتك يا مريم!</h2><div class="score">'+score+' / '+qs.length+'</div><h3>'+msg+'</h3><p>راجعي الإجابات والتفسيرات لتثبيت معلومات الدرس.</p><button onclick="restart()">إعادة اللعب 🔄</button>';
+document.getElementById('bar').style.width='100%';
+}
+function restart(){i=0;score=0;document.getElementById('result').hidden=true;document.getElementById('game').hidden=false;showQ()}
+</script>
+</body></html>
